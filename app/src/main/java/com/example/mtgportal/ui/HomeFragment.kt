@@ -1,32 +1,27 @@
 package com.example.mtgportal.ui
 
-import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import com.example.mtgportal.R
+import androidx.lifecycle.ViewModelProvider
+import com.example.mtgportal.App
+import com.example.mtgportal.databinding.FragmentHomeBinding
+import com.example.mtgportal.utils.ViewModelFactory
 
-class HomeFragment : Fragment() {
+class HomeFragment : BaseFragment() {
 
-    companion object {
-        fun newInstance() = HomeFragment()
-    }
+    //region declaration
+    private  val _viewModel by lazy { ViewModelProvider(viewModelStore, ViewModelFactory(App.instance.apiService)).get(HomeViewModel::class.java) }
+    private val _binding by lazy { FragmentHomeBinding.inflate(layoutInflater) }
+    //endregion
 
-    private lateinit var viewModel: HomeViewModel
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_home, container, false)
-    }
-
+    //region lifecycle
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProvider(this).get(HomeViewModel::class.java)
         // TODO: Use the ViewModel
     }
+    //endregion
 
+    override fun getInflatedView(): View {
+        return _binding.root
+    }
 }
