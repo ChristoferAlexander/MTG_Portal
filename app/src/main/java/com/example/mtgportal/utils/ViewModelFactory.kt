@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.mtgportal.api.ApiService
 import com.example.mtgportal.repository.CardRepository
-import com.example.mtgportal.ui.HomeViewModel
+import com.example.mtgportal.ui.home.HomeViewModel
 
 class ViewModelFactory(private val _apiService: ApiService): ViewModelProvider.Factory {
 

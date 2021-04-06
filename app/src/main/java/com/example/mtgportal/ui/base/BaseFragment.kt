@@ -1,4 +1,4 @@
-package com.example.mtgportal.ui
+package com.example.mtgportal.ui.base
 
 import android.os.Bundle
 import android.view.LayoutInflater
