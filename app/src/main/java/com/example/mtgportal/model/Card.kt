@@ -12,6 +12,6 @@ data class Card(
     var type: String,
     var set: String,
     var artist: String,
-    var imageUrl: String
+    var imageUrl: String?
 )
 

@@ -2,10 +2,13 @@ package com.example.mtgportal.api
 
 import com.example.mtgportal.api.response.CardTypesApiResponse
 import com.example.mtgportal.api.response.CardsApiResponse
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
+
 
 interface ApiService {
 
@@ -36,16 +39,20 @@ interface ApiService {
 
     //region helpers
     sealed class ApiResult<out T> {
-        data class Success<out T>(val value: T): ApiResult<T>()
-        data class ApiError(val code: Int? = null, val error: String?): ApiResult<Nothing>()
-        object NetworkError: ApiResult<Nothing>()
-        object UnknownError: ApiResult<Nothing>()
+        data class Success<out T>(val value: T) : ApiResult<T>()
+        data class ApiError(val code: Int? = null, val error: String?) : ApiResult<Nothing>()
+        object NetworkError : ApiResult<Nothing>()
+        object UnknownError : ApiResult<Nothing>()
     }
 
     companion object {
         var BASE_URL = "https://api.magicthegathering.io/v1/"
         fun create(): ApiService {
+            val interceptor = HttpLoggingInterceptor()
+            interceptor.level = HttpLoggingInterceptor.Level.BODY
+            val client = OkHttpClient.Builder().addInterceptor(interceptor).build()
             val retrofit = Retrofit.Builder()
+                .client(client)
                 .addConverterFactory(GsonConverterFactory.create())
                 .baseUrl(BASE_URL)
                 .build()
