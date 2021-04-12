@@ -7,7 +7,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.activityViewModels
@@ -18,7 +17,6 @@ import androidx.recyclerview.widget.DividerItemDecoration.VERTICAL
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.mtgportal.App
 import com.example.mtgportal.R
 import com.example.mtgportal.databinding.FragmentHomeBinding
 import com.example.mtgportal.model.Card
@@ -35,9 +33,8 @@ class HomeFragment : BaseFragment(), CardItemClickListener, OnBottomReachedListe
 
     //region declaration
     private val _viewModel: HomeViewModel by activityViewModels {
-        ViewModelFactory(requireActivity(), App.instance.apiService)
+        ViewModelFactory(requireActivity())
     }
-
     private val _binding by lazy { FragmentHomeBinding.inflate(layoutInflater) }
     private val _adapter: CardsAdapter by lazy { CardsAdapter(this) }
     //endregion
@@ -64,6 +61,11 @@ class HomeFragment : BaseFragment(), CardItemClickListener, OnBottomReachedListe
             adapter = _adapter
         }
         _viewModel.viewState.observe(viewLifecycleOwner, _viewStateObserver)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        _viewModel.refreshFavorite()
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -126,11 +128,11 @@ class HomeFragment : BaseFragment(), CardItemClickListener, OnBottomReachedListe
 
     //region implements CardGridItemViewHolder.CardGridItemClickListener
     override fun onCardClicked(item: Card) {
-        TODO("Not yet implemented")
+        //TODO
     }
 
     override fun onFavoriteCardClicked(item: Card) {
-        TODO("Not yet implemented")
+        _viewModel.toggleFavorite(item)
     }
     //endregion
 

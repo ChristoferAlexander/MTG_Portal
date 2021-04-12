@@ -8,12 +8,12 @@ import com.example.mtgportal.model.Card
 import com.example.mtgportal.ui.base.BaseRecyclerViewAdapter
 import com.example.mtgportal.ui.card.CardItemViewHolder.*
 
+
 class CardsAdapter(private val _cardGridItemClickListener: CardItemClickListener) :
     BaseRecyclerViewAdapter<Card, CardItemViewHolder>() {
 
     private val _grid = 1
     private val _linear = 2
-
     var isGrid = true
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CardItemViewHolder {
@@ -29,7 +29,7 @@ class CardsAdapter(private val _cardGridItemClickListener: CardItemClickListener
     }
 
     override fun onBindViewHolder(holder: CardItemViewHolder, position: Int) {
-        holder.bind(isGrid, getItems()[position], _cardGridItemClickListener)
+        holder.bind(getItems()[position], _cardGridItemClickListener)
     }
 
     fun toggleGrid() {

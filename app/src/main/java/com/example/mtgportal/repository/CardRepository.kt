@@ -4,15 +4,21 @@ import com.example.mtgportal.api.ApiService
 import com.example.mtgportal.api.ApiService.ApiResult
 import com.example.mtgportal.api.response.CardTypesApiResponse
 import com.example.mtgportal.api.response.CardsApiResponse
+import com.example.mtgportal.database.FavoriteCardsDao
+import com.example.mtgportal.model.Card
 import com.example.mtgportal.model.helper.SearchFilter
 import timber.log.Timber
 
-class CardRepository private constructor(private val apiService: ApiService) : BaseRepository() {
-    suspend fun getCards(searchFilter: SearchFilter, page: Int): ApiResult<CardsApiResponse> {
+class CardRepository private constructor(
+    private val _apiService: ApiService,
+    private val _favoriteCardsDao: FavoriteCardsDao
+) : BaseRepository() {
+
+    suspend fun getRemote(searchFilter: SearchFilter, page: Int): ApiResult<CardsApiResponse> {
         Timber.d("Requesting cards matching: $searchFilter")
         Timber.d("Page: $page")
         return safeApiCall {
-            apiService.getCards(
+            _apiService.getCards(
                 page = page,
                 name = searchFilter.searchQuery,
                 colors = null,
@@ -22,17 +28,32 @@ class CardRepository private constructor(private val apiService: ApiService) : B
         }
     }
 
-    suspend fun getCardTypes(): ApiResult<CardTypesApiResponse> {
-        return safeApiCall { apiService.getCardTypes() }
+    suspend fun getTypes(): ApiResult<CardTypesApiResponse> {
+        return safeApiCall { _apiService.getCardTypes() }
+    }
+
+    suspend fun getFavorites(): List<Card> {
+        return _favoriteCardsDao.getAll()
+    }
+
+    suspend fun addFavorite(card: Card) {
+        _favoriteCardsDao.insert(card)
+    }
+
+    suspend fun deleteFavorite(card: Card) {
+        _favoriteCardsDao.delete(card)
     }
 
     companion object {
         @Volatile
         private var INSTANCE: CardRepository? = null
 
-        fun getInstance(apiService: ApiService): CardRepository =
+        fun getInstance(
+            apiService: ApiService,
+            favoriteCardsDao: FavoriteCardsDao
+        ): CardRepository =
             INSTANCE ?: synchronized(this) {
-                INSTANCE ?: CardRepository(apiService).also { INSTANCE = it }
+                INSTANCE ?: CardRepository(apiService, favoriteCardsDao).also { INSTANCE = it }
             }
     }
 }

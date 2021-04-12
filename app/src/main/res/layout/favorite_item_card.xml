@@ -10,13 +10,12 @@
 
         <variable
             name="listener"
-            type="com.example.mtgportal.ui.card.CardItemViewHolder.CardItemClickListener" />
+            type="com.example.mtgportal.ui.card.FavoriteItemViewHolder.FavoriteItemClickListener" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="@{()->listener.onCardClicked(card)}"
         android:paddingVertical="@dimen/spacing_medium">
 
         <androidx.appcompat.widget.AppCompatImageView
@@ -49,12 +48,12 @@
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/btn_favorite"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:layout_gravity="end"
-            android:onClick="@{()->listener.onFavoriteCardClicked(card)}"
+            android:onClick="@{()->listener.onUnfavored(card)}"
             android:padding="@dimen/spacing_medium"
-            android:src="@drawable/ic_favorite_border_24"
+            android:src="@drawable/ic_favorite_24"
             android:tint="@color/red"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
