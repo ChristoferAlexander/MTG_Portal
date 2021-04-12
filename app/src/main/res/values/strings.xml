@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">MTG Portal</string>
+
+    <!--region bottom main menu-->
+    <string name="bottom_main_favorites">Favorite</string>
+    <string name="bottom_main_home">Home</string>
+    <string name="bottom_main_info">Info</string>
+    <!--endregion-->
+
+    <!--region home-->
+    <string name="home_menu_item_search">Search</string>
+    <string name="home_menu_item_toggle_adapter">Filter</string>
+    <!--endregion-->
 </resources>
