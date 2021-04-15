@@ -1,8 +1,11 @@
 package com.example.mtgportal.ui.favorite
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import androidx.core.content.res.ResourcesCompat
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -11,25 +14,35 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.mtgportal.R
 import com.example.mtgportal.databinding.FragmentFavoritesBinding
 import com.example.mtgportal.model.Card
-import com.example.mtgportal.ui.base.BaseFragment
-import com.example.mtgportal.ui.card.FavoriteItemViewHolder.*
+import com.example.mtgportal.ui.card.FavoriteItemViewHolder.FavoriteItemClickListener
 import com.example.mtgportal.ui.card.FavoritesCardsAdapter
-import com.example.mtgportal.ui.favorite.FavoritesViewModel.*
+import com.example.mtgportal.ui.favorite.FavoritesViewModel.ViewState
 import com.example.mtgportal.utils.ViewModelFactory
 
-class FavoritesFragment : BaseFragment(), FavoriteItemClickListener {
+class FavoritesFragment : Fragment(), FavoriteItemClickListener {
 
     //region declaration
+    private var _binding: FragmentFavoritesBinding? = null
+    private val binding get() = _binding!!
+    private val _adapter: FavoritesCardsAdapter by lazy { FavoritesCardsAdapter(this) }
     private val _viewModel: FavoritesViewModel by activityViewModels {
         ViewModelFactory(requireActivity())
     }
-    private val _binding by lazy { FragmentFavoritesBinding.inflate(layoutInflater) }
-    private val _adapter: FavoritesCardsAdapter by lazy { FavoritesCardsAdapter(this) }
     //endregion
+
+    //region lifecycle
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentFavoritesBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        _binding.cardsRv.apply {
+        binding.cardsRv.apply {
             ResourcesCompat.getDrawable(resources, R.drawable.divider, null)?.let {
                 val verticalDecorator = DividerItemDecoration(context,
                     DividerItemDecoration.VERTICAL
@@ -44,7 +57,10 @@ class FavoritesFragment : BaseFragment(), FavoriteItemClickListener {
         _viewModel.getFavorites()
     }
 
-    override fun getInflatedView(): View = _binding.root
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
     //endregion
 
     //region ViewModel observers

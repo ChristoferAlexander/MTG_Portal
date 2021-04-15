@@ -9,15 +9,23 @@
         android:id="@+id/homeFragment"
         android:name="com.example.mtgportal.ui.home.HomeFragment"
         android:label="@string/bottom_main_home"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_home" >
+        <action
+            android:id="@+id/action_homeFragment_to_favoritesFragment"
+            app:destination="@id/favoritesFragment" />
+    </fragment>
     <fragment
         android:id="@+id/favoritesFragment"
         android:name="com.example.mtgportal.ui.favorite.FavoritesFragment"
         android:label="@string/bottom_main_favorites"
-        tools:layout="@layout/fragment_favorites" />
+        tools:layout="@layout/fragment_favorites" >
+        <action
+            android:id="@+id/action_favoritesFragment_to_informationFragment"
+            app:destination="@id/informationFragment" />
+    </fragment>
     <fragment
         android:id="@+id/informationFragment"
-        android:name="com.example.mtgportal.ui.InformationFragment"
+        android:name="com.example.mtgportal.ui.info.InformationFragment"
         android:label="@string/bottom_main_info"
         tools:layout="@layout/fragment_infrormation" />
 </navigation>

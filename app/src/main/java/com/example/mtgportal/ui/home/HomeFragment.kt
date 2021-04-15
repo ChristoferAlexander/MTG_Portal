@@ -1,14 +1,12 @@
 package com.example.mtgportal.ui.home
 
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.view.View
+import android.view.*
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.res.ResourcesCompat
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -21,7 +19,6 @@ import com.example.mtgportal.R
 import com.example.mtgportal.databinding.FragmentHomeBinding
 import com.example.mtgportal.model.Card
 import com.example.mtgportal.ui.MainActivity
-import com.example.mtgportal.ui.base.BaseFragment
 import com.example.mtgportal.ui.card.CardItemViewHolder.CardItemClickListener
 import com.example.mtgportal.ui.card.CardsAdapter
 import com.example.mtgportal.ui.custom.PaginatedRecyclerView.OnBottomReachedListener
@@ -29,13 +26,14 @@ import com.example.mtgportal.ui.home.HomeViewModel.ViewState
 import com.example.mtgportal.utils.ViewModelFactory
 
 
-class HomeFragment : BaseFragment(), CardItemClickListener, OnBottomReachedListener {
+class HomeFragment : Fragment(), CardItemClickListener, OnBottomReachedListener {
 
     //region declaration
+    private var _binding: FragmentHomeBinding? = null
+    private val binding get() = _binding!!
     private val _viewModel: HomeViewModel by activityViewModels {
         ViewModelFactory(requireActivity())
     }
-    private val _binding by lazy { FragmentHomeBinding.inflate(layoutInflater) }
     private val _adapter: CardsAdapter by lazy { CardsAdapter(this) }
     //endregion
 
@@ -45,10 +43,19 @@ class HomeFragment : BaseFragment(), CardItemClickListener, OnBottomReachedListe
         setHasOptionsMenu(true)
     }
 
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentHomeBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        _binding.cardsRv.onBottomReachedListener = this
-        _binding.cardsRv.apply {
+        binding.cardsRv.onBottomReachedListener = this
+        binding.cardsRv.apply {
             ResourcesCompat.getDrawable(resources, R.drawable.divider, null)?.let {
                 val verticalDecorator = DividerItemDecoration(context, VERTICAL)
                 val horizontalDecorator = DividerItemDecoration(context, HORIZONTAL)
@@ -101,7 +108,7 @@ class HomeFragment : BaseFragment(), CardItemClickListener, OnBottomReachedListe
             item.icon =
                 if (_adapter.isGrid) ResourcesCompat.getDrawable(resources, R.drawable.ic_grid_on_24, null)
                 else ResourcesCompat.getDrawable(resources, R.drawable.ic_grid_off_24, null)
-            _binding.cardsRv.layoutManager =
+            binding.cardsRv.layoutManager =
                 if (_adapter.isGrid) GridLayoutManager(context, 3, RecyclerView.VERTICAL, false)
                 else LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
             true
@@ -111,17 +118,20 @@ class HomeFragment : BaseFragment(), CardItemClickListener, OnBottomReachedListe
         }
     }
 
-    override fun getInflatedView(): View = _binding.root
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
     //endregion
 
     //region ViewModel observers
     private val _viewStateObserver = Observer<ViewState> { viewState ->
         when (viewState) {
             is ViewState.DisplayCards -> {
-                _binding.progressBar.visibility = GONE
+                binding.progressBar.visibility = GONE
                 _adapter.setItems(viewState.data)
             }
-            ViewState.Loading -> _binding.progressBar.visibility = VISIBLE
+            ViewState.Loading -> binding.progressBar.visibility = VISIBLE
         }
     }
     //endregion
