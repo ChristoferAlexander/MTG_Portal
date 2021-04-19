@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">MTG Portal</string>
 
-    <!--region bottom main menu-->
+    <!--region main bottom menu-->
     <string name="bottom_main_favorites">Favorite</string>
     <string name="bottom_main_home">Home</string>
     <string name="bottom_main_info">Info</string>
@@ -9,6 +9,12 @@
 
     <!--region home-->
     <string name="home_menu_item_search">Search</string>
-    <string name="home_menu_item_toggle_adapter">Filter</string>
+    <string name="home_menu_item_toggle_adapter">Grid</string>
+    <!--endregion-->
+
+    <!--region bottom sheet filters-->
+    <string name="bottom_sheet_filters_colors_tag">Colors</string>
+    <string name="bottom_sheet_filters_rarity_tag">Rarity</string>
+    <string name="bottom_sheet_filters_tag">Filters</string>
     <!--endregion-->
 </resources>

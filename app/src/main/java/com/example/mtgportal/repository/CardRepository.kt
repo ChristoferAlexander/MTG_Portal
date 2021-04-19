@@ -15,28 +15,30 @@ class CardRepository private constructor(
 ) : BaseRepository() {
 
     suspend fun getRemote(searchFilter: SearchFilter, page: Int): ApiResult<CardsApiResponse> {
-        Timber.d("Requesting cards matching: $searchFilter")
-        Timber.d("Page: $page")
+        Timber.i("Requesting cards matching: $searchFilter")
+        Timber.i("Page: $page")
         return safeApiCall {
             _apiService.getCards(
                 page = page,
                 name = searchFilter.searchQuery,
-                colors = null,
+                colors = searchFilter.colorFilters.joinToString { it }.replace(" ", ""),
                 types = null,
-                rarity = null
+                rarity = searchFilter.rarityFilters.joinToString { it }.replace(" ", "")
             )
         }
     }
 
-    suspend fun getTypes(): ApiResult<CardTypesApiResponse> {
+    suspend fun getRemoteTypes(): ApiResult<CardTypesApiResponse> {
         return safeApiCall { _apiService.getCardTypes() }
     }
 
     suspend fun getFavorites(): List<Card> {
+        Timber.i("Fetching favorites from database..")
         return _favoriteCardsDao.getAll()
     }
 
     suspend fun addFavorite(card: Card) {
+        Timber.i("Card added to favorite")
         _favoriteCardsDao.insert(card)
     }
 

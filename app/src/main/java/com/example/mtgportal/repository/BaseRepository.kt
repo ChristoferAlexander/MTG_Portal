@@ -2,6 +2,7 @@ package com.example.mtgportal.repository
 
 import com.example.mtgportal.api.ApiService.ApiResult
 import com.example.mtgportal.api.ApiService.ApiResult.*
+import kotlinx.coroutines.CancellationException
 import retrofit2.HttpException
 import java.io.IOException
 
@@ -13,6 +14,7 @@ open class BaseRepository {
             when (throwable) {
                 is IOException -> NetworkError
                 is HttpException -> ApiError(throwable.code(), throwable.message())
+                is CancellationException -> JobCanceled
                 else -> UnknownError
             }
         }

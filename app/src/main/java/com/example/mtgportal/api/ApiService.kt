@@ -43,6 +43,7 @@ interface ApiService {
         data class ApiError(val code: Int? = null, val error: String?) : ApiResult<Nothing>()
         object NetworkError : ApiResult<Nothing>()
         object UnknownError : ApiResult<Nothing>()
+        object JobCanceled : ApiResult<Nothing>()
     }
 
     companion object {

@@ -1,12 +1,14 @@
 package com.example.mtgportal.ui.home
 
 import androidx.lifecycle.*
-import com.example.mtgportal.api.ApiService.ApiResult
 import com.example.mtgportal.api.ApiService.ApiResult.*
 import com.example.mtgportal.model.Card
+import com.example.mtgportal.model.definitions.MtgColors
+import com.example.mtgportal.model.definitions.MtgRarities
 import com.example.mtgportal.model.helper.SearchFilter
 import com.example.mtgportal.repository.CardRepository
 import com.example.mtgportal.ui.home.HomeViewModel.ViewState.*
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -18,12 +20,17 @@ class HomeViewModel(
     //region declaration
     private val _viewState: MutableLiveData<ViewState> = MutableLiveData()
     val viewState: LiveData<ViewState> = _viewState
-
+    // --api helpers--
+    private var apiJob: Job? = null
+    private var _page = 1
+    // --card caching--
     private var _cards: MutableList<Card> = mutableListOf()
     private var _favoriteCards: MutableList<Card> = mutableListOf()
-    private var _searchFilter: SearchFilter =
-        _state.get<SearchFilter>("searchFilter") ?: SearchFilter()
-    private var _page = 1
+    // --saved state--
+    private val searchFilterKey = "searchFilter"
+    private val isGridDisplayKey = "isGridDisplay"
+    var searchFilter: SearchFilter = _state.get(searchFilterKey) ?: SearchFilter()
+    var isGridDisplay: Boolean = _state.get(isGridDisplayKey) ?: true
     //endregion
 
     //region lifecycle
@@ -35,16 +42,18 @@ class HomeViewModel(
     }
 
     override fun onCleared() {
-        _state.set("searchFilter", _searchFilter)
+        _state.set(searchFilterKey, searchFilter)
+        _state.set(isGridDisplayKey, isGridDisplay)
         super.onCleared()
     }
     //endregion
 
     //region private methods
     private fun search() {
+        Timber.i("Searching..")
         _viewState.value = Loading
-        viewModelScope.launch {
-            when (val result = _cardRepository.getRemote(_searchFilter, _page)) {
+        apiJob = viewModelScope.launch {
+            when (val result = _cardRepository.getRemote(searchFilter, _page)) {
                 is Success -> {
                     val remoteCards = result.value.cards.filter { it.imageUrl != null }
                     remoteCards.intersect(_favoriteCards).forEach { it.isFavorite = true }
@@ -57,24 +66,40 @@ class HomeViewModel(
             }
         }
     }
-    //endregion
 
-    //region public methods
-    fun loadNextPage() {
-        Timber.d("Loading next page..")
-        _page++
-        search()
-    }
-
-    fun onSearchQueryChanged(searchQuery: String?) {
-        Timber.d("Search query changed: $searchQuery")
-        _searchFilter.searchQuery = searchQuery
+    private fun resetAndSearch() {
+        Timber.i("Resetting search..")
+        apiJob?.cancel()
         _cards.clear()
         _page = 1
         search()
     }
+    //endregion
+
+    //region public methods
+    fun onSearchQueryChanged(searchQuery: String?) {
+        searchFilter.searchQuery = searchQuery
+        resetAndSearch()
+    }
+
+    fun toggleColor(@MtgColors color: String): Boolean {
+        val isToggled = searchFilter.colorFilters.contains(color)
+        if (isToggled) searchFilter.colorFilters.remove(color)
+        else searchFilter.colorFilters.add(color)
+        resetAndSearch()
+        return !isToggled
+    }
+
+    fun toggleRarity(@MtgRarities rarity: String): Boolean {
+        val isToggled = searchFilter.rarityFilters.contains(rarity)
+        if (isToggled) searchFilter.rarityFilters.remove(rarity)
+        else searchFilter.rarityFilters.add(rarity)
+        resetAndSearch()
+        return !isToggled
+    }
 
     fun toggleFavorite(card: Card) {
+        Timber.d("Toggling favorite status for $card")
         card.isFavorite = !card.isFavorite
         viewModelScope.launch {
             when (card.isFavorite) {
@@ -92,13 +117,24 @@ class HomeViewModel(
         }
     }
 
+    fun loadNextPage() {
+        Timber.i("Loading next page..")
+        _page++
+        search()
+    }
+
     fun refreshFavorite() {
+        Timber.d("Refreshing favorite cards..")
         viewModelScope.launch {
             _favoriteCards.clear()
             _favoriteCards.addAll(_cardRepository.getFavorites())
             _cards.subtract(_favoriteCards).forEach { it.isFavorite = false }
             _viewState.postValue(DisplayCards(_cards))
         }
+    }
+
+    fun toggleGridState() {
+        isGridDisplay = !isGridDisplay
     }
     //endregion
 

@@ -10,7 +10,7 @@ import com.example.mtgportal.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
-    private val _nabController by lazy { (supportFragmentManager.findFragmentById(R.id.fragment_container) as NavHostFragment).navController }
+    private val _navController by lazy { (supportFragmentManager.findFragmentById(R.id.fragment_container) as NavHostFragment).navController }
 
     //region declaration
     private val _binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
@@ -24,14 +24,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        return (_nabController.navigateUp() || super.onSupportNavigateUp())
+        return (_navController.navigateUp() || super.onSupportNavigateUp())
     }
     //endregion
 
     //region init
     private fun setNavigation() {
-        NavigationUI.setupWithNavController(_binding.bottomNavView, _nabController)
-        NavigationUI.setupActionBarWithNavController(this, _nabController)
+        NavigationUI.setupWithNavController(_binding.bottomNavView, _navController)
+        NavigationUI.setupActionBarWithNavController(this, _navController)
     }
     //endregion
 }

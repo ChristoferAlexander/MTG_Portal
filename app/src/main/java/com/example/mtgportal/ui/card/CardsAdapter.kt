@@ -31,9 +31,4 @@ class CardsAdapter(private val _cardGridItemClickListener: CardItemClickListener
     override fun onBindViewHolder(holder: CardItemViewHolder, position: Int) {
         holder.bind(getItems()[position], _cardGridItemClickListener)
     }
-
-    fun toggleGrid() {
-        isGrid = !isGrid
-        notifyDataSetChanged()
-    }
 }

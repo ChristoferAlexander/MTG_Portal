@@ -10,7 +10,7 @@ data class Card(
     @PrimaryKey
     var id: String,
     var name: String,
-    var text: String,
+    var text: String?,
     var manaCost: String,
     var cmc: Int,
     var rarity: String,
