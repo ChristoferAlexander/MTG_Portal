@@ -1,7 +1,10 @@
 package com.example.mtgportal.ui
 
 import android.os.Bundle
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
 import com.example.mtgportal.R
@@ -23,6 +26,16 @@ class MainActivity : AppCompatActivity() {
         setNavigation()
     }
 
+    override fun onResume() {
+        super.onResume()
+        _navController.addOnDestinationChangedListener(listener)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        _navController.removeOnDestinationChangedListener(listener)
+    }
+
     override fun onSupportNavigateUp(): Boolean {
         return (_navController.navigateUp() || super.onSupportNavigateUp())
     }
@@ -34,4 +47,11 @@ class MainActivity : AppCompatActivity() {
         NavigationUI.setupActionBarWithNavController(this, _navController)
     }
     //endregion
+
+    private val listener = NavController.OnDestinationChangedListener { _, destination, _ ->
+        when (destination.id) {
+            R.id.cardDetailsFragment -> _binding.bottomNavView.visibility = GONE
+            else -> _binding.bottomNavView.visibility = VISIBLE
+        }
+    }
 }

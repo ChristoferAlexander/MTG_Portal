@@ -18,14 +18,19 @@ class HomeViewModel(
 ) : ViewModel() {
 
     //region declaration
-    private val _viewState: MutableLiveData<ViewState> = MutableLiveData()
-    val viewState: LiveData<ViewState> = _viewState
+    private val _viewStateLiveData: MutableLiveData<ViewState> = MutableLiveData()
+    val viewStateLiveData: LiveData<ViewState> = _viewStateLiveData
+    private val _cardTypesLiveData: MutableLiveData<List<String>> = MutableLiveData()
+    val cardTypeLiveData: LiveData<List<String>> = _cardTypesLiveData
+
     // --api helpers--
     private var apiJob: Job? = null
     private var _page = 1
+
     // --card caching--
     private var _cards: MutableList<Card> = mutableListOf()
     private var _favoriteCards: MutableList<Card> = mutableListOf()
+
     // --saved state--
     private val searchFilterKey = "searchFilter"
     private val isGridDisplayKey = "isGridDisplay"
@@ -35,6 +40,7 @@ class HomeViewModel(
 
     //region lifecycle
     init {
+        getCardTypes()
         viewModelScope.launch {
             _favoriteCards.addAll(_cardRepository.getFavorites())
             search()
@@ -51,14 +57,15 @@ class HomeViewModel(
     //region private methods
     private fun search() {
         Timber.i("Searching..")
-        _viewState.value = Loading
+        _viewStateLiveData.value = Loading
         apiJob = viewModelScope.launch {
-            when (val result = _cardRepository.getRemote(searchFilter, _page)) {
+            when (val response = _cardRepository.getRemoteCards(searchFilter, _page)) {
                 is Success -> {
-                    val remoteCards = result.value.cards.filter { it.imageUrl != null }
+                    val remoteCards = response.value.cards.filter { it.imageUrl != null }
                     remoteCards.intersect(_favoriteCards).forEach { it.isFavorite = true }
                     _cards.addAll(remoteCards)
-                    _viewState.postValue(DisplayCards(_cards))
+                    if (_cards.isEmpty()) _viewStateLiveData.postValue(NoResultFound)
+                    else _viewStateLiveData.postValue(DisplayResult(_cards))
                 }
                 is ApiError -> TODO()
                 NetworkError -> TODO()
@@ -73,6 +80,15 @@ class HomeViewModel(
         _cards.clear()
         _page = 1
         search()
+    }
+
+    private fun getCardTypes() {
+        if (_cardTypesLiveData.value == null)
+            viewModelScope.launch {
+                when (val response = _cardRepository.getRemoteTypes()) {
+                    is Success -> _cardTypesLiveData.postValue(response.value.types)
+                }
+            }
     }
     //endregion
 
@@ -113,7 +129,7 @@ class HomeViewModel(
                 }
             }
             _cards.find { it.id == card.id }?.isFavorite = card.isFavorite
-            _viewState.postValue(DisplayCards(_cards))
+            _viewStateLiveData.postValue(DisplayResult(_cards))
         }
     }
 
@@ -129,7 +145,7 @@ class HomeViewModel(
             _favoriteCards.clear()
             _favoriteCards.addAll(_cardRepository.getFavorites())
             _cards.subtract(_favoriteCards).forEach { it.isFavorite = false }
-            _viewState.postValue(DisplayCards(_cards))
+            _viewStateLiveData.postValue(DisplayResult(_cards))
         }
     }
 
@@ -141,7 +157,8 @@ class HomeViewModel(
     //regions members
     sealed class ViewState {
         object Loading : ViewState()
-        data class DisplayCards(val data: List<Card>) : ViewState()
+        data class DisplayResult(val data: List<Card>) : ViewState()
+        object NoResultFound : ViewState()
     }
     //endregion
 }

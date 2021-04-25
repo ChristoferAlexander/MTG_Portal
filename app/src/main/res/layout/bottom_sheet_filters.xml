@@ -22,26 +22,15 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/icon_tap"
-            android:rotation="45"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/spacing_medium"
-            android:src="@drawable/ic_tap_24"
-            app:layout_constraintBottom_toBottomOf="@id/peak_button"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/peak_button"
             android:layout_width="0dp"
             android:layout_height="@dimen/peak_height"
             android:gravity="center"
             android:onClick="@{(v)-> clickListener.onClick(v)}"
-            android:text="@string/bottom_sheet_filters_tag"
+            android:text="@string/filters"
             android:textColor="@color/text_primary"
-            android:textSize="@dimen/text_big"
+            android:textSize="@dimen/text_large"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
@@ -49,17 +38,28 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/label_sets"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sets"
+            android:visibility="gone"
+            android:textColor="@color/text_primary"
+            android:textSize="@dimen/text_large"
+            app:layout_constraintStart_toStartOf="@id/label_colors"
+            app:layout_constraintTop_toBottomOf="@id/peak_button" />
+
+        <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/label_rarity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_medium"
             android:layout_marginBottom="@dimen/spacing_small"
-            android:text="@string/bottom_sheet_filters_rarity_tag"
+            android:text="@string/filters_rarity"
             android:textColor="@color/text_primary"
-            android:textSize="@dimen/text_big"
+            android:textSize="@dimen/text_large"
             app:layout_constraintBottom_toTopOf="@id/filter_rarity_common"
             app:layout_constraintStart_toStartOf="@id/filter_colorless"
-            app:layout_constraintTop_toBottomOf="@id/peak_button" />
+            app:layout_constraintTop_toBottomOf="@id/label_sets" />
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/filter_rarity_common"
@@ -67,10 +67,12 @@
             android:layout_height="45dp"
             android:layout_marginBottom="@dimen/spacing_medium"
             android:adjustViewBounds="true"
-            android:alpha="0.25"
+            android:alpha="0.5"
             android:onClick="@{(v)-> clickListener.onClick(v)}"
             android:padding="@dimen/spacing_small"
             android:src="@drawable/ic_mtg"
+            android:tint="@color/white"
+            android:tintMode="multiply"
             app:layout_constraintBottom_toTopOf="@id/label_colors"
             app:layout_constraintStart_toStartOf="@id/filter_colorless" />
 
@@ -86,7 +88,7 @@
             android:tint="@color/uncommon"
             android:tintMode="multiply"
             app:layout_constraintBottom_toBottomOf="@id/filter_rarity_common"
-            app:layout_constraintStart_toStartOf="@id/filer_white" />
+            app:layout_constraintStart_toStartOf="@id/filter_white" />
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/filter_rarity_rare"
@@ -116,23 +118,14 @@
             app:layout_constraintBottom_toBottomOf="@id/filter_rarity_common"
             app:layout_constraintStart_toStartOf="@id/filter_black" />
 
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0.5dp"
-            android:background="@color/orange_red"
-            app:layout_constraintBottom_toTopOf="@id/label_colors"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/filter_rarity_common" />
-
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/label_colors"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/spacing_small"
-            android:text="@string/bottom_sheet_filters_colors_tag"
+            android:text="@string/filters_colors"
             android:textColor="@color/text_primary"
-            android:textSize="@dimen/text_big"
+            android:textSize="@dimen/text_large"
             app:layout_constraintBottom_toTopOf="@id/filter_colorless"
             app:layout_constraintStart_toStartOf="@id/filter_colorless" />
 
@@ -146,11 +139,11 @@
             android:padding="@dimen/spacing_small"
             android:src="@drawable/ic_colorless"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/filer_white"
+            app:layout_constraintEnd_toStartOf="@id/filter_white"
             app:layout_constraintStart_toStartOf="parent" />
 
         <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/filer_white"
+            android:id="@+id/filter_white"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:adjustViewBounds="true"
@@ -173,7 +166,7 @@
             android:src="@drawable/ic_color_blue"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/filter_black"
-            app:layout_constraintStart_toEndOf="@id/filer_white" />
+            app:layout_constraintStart_toEndOf="@id/filter_white" />
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/filter_black"

@@ -11,7 +11,7 @@ data class Card(
     var id: String,
     var name: String,
     var text: String?,
-    var manaCost: String,
+    var manaCost: String?,
     var cmc: Int,
     var rarity: String,
     var power: String?,

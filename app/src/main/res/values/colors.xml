@@ -18,7 +18,7 @@
 
     <!--region rarity colors-->
     <color name="common">@color/black</color>
-    <color name="uncommon">#FF474E51</color>
+    <color name="uncommon">#d9ddde</color>
     <color name="rare">#FF83703D</color>
     <color name="mythic_rare">#FFB02911</color>
     <!--endregion-->

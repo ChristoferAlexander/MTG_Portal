@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:paddingVertical="@dimen/spacing_medium">
 
-        <androidx.appcompat.widget.AppCompatImageView
+        <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/iv_card_art"
             remoteImageUrl="@{card.imageUrl}"
             android:layout_width="100dp"
@@ -28,7 +28,8 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintDimensionRatio="W,9:7"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:shapeAppearanceOverlay="@style/roundedCornersImageView" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tv_card_title"
@@ -36,10 +37,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/spacing_small"
-            android:textColor="@color/text_primary"
             android:padding="@dimen/spacing_small"
             android:paddingHorizontal="@dimen/spacing_small"
             android:text="@{card.name}"
+            android:textColor="@color/text_primary"
             android:textSize="@dimen/text_medium"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -53,8 +54,8 @@
             android:layout_height="60dp"
             android:onClick="@{()->listener.onUnfavored(card)}"
             android:padding="@dimen/spacing_medium"
-            android:src="@drawable/ic_favorite_24"
-            android:tint="@color/red"
+            android:rotation="45"
+            android:src="@drawable/ic_tap_red_24"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />

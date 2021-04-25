@@ -2,19 +2,25 @@
     <string name="app_name">MTG Portal</string>
 
     <!--region main bottom menu-->
-    <string name="bottom_main_favorites">Favorite</string>
-    <string name="bottom_main_home">Home</string>
-    <string name="bottom_main_info">Info</string>
+    <string name="menu_item_favorites">Favorite</string>
+    <string name="menu_item_home">Home</string>
+    <string name="menu_item_info">Info</string>
     <!--endregion-->
 
     <!--region home-->
-    <string name="home_menu_item_search">Search</string>
-    <string name="home_menu_item_toggle_adapter">Grid</string>
+    <string name="menu_item_search">Search</string>
+    <string name="menu_item_toggle_adapter">Grid</string>
     <!--endregion-->
 
+    <!--region card details-->
+    <string name="cmc">Mana cost: %s</string>
+    <string name="power_toughness">Power - Toughness: %1s / %2s</string>
+    <string name="no_results">No results found</string>
+    <!---->
+
     <!--region bottom sheet filters-->
-    <string name="bottom_sheet_filters_colors_tag">Colors</string>
-    <string name="bottom_sheet_filters_rarity_tag">Rarity</string>
-    <string name="bottom_sheet_filters_tag">Filters</string>
+    <string name="filters_colors">Colors</string>
+    <string name="filters_rarity">Rarity</string>
+    <string name="filters">Filters</string>
     <!--endregion-->
 </resources>

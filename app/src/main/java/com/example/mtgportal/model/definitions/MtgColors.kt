@@ -15,6 +15,7 @@ import com.example.mtgportal.model.definitions.MtgColors.Companion.WHITE
 @StringDef(WHITE, BLACK, RED, GREEN, BLUE)
 annotation class MtgColors {
     companion object {
+        const val COLORLESS = "colorless"
         const val WHITE = "white"
         const val BLACK = "black"
         const val GREEN = "green"

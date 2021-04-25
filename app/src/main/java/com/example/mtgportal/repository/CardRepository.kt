@@ -14,7 +14,7 @@ class CardRepository private constructor(
     private val _favoriteCardsDao: FavoriteCardsDao
 ) : BaseRepository() {
 
-    suspend fun getRemote(searchFilter: SearchFilter, page: Int): ApiResult<CardsApiResponse> {
+    suspend fun getRemoteCards(searchFilter: SearchFilter, page: Int): ApiResult<CardsApiResponse> {
         Timber.i("Requesting cards matching: $searchFilter")
         Timber.i("Page: $page")
         return safeApiCall {

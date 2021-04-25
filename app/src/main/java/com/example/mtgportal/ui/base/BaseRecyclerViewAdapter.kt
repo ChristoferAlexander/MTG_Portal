@@ -23,4 +23,9 @@ abstract class BaseRecyclerViewAdapter<D, V : RecyclerView.ViewHolder> : Recycle
         this._items.addAll(data)
         notifyItemRangeInserted(index, data.size)
     }
+
+    fun clearItems() {
+        _items.clear()
+        notifyDataSetChanged()
+    }
 }

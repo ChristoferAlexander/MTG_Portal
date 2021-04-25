@@ -4,11 +4,15 @@ import android.os.Bundle
 import android.view.*
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.SearchView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.FragmentNavigatorExtras
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.DividerItemDecoration.HORIZONTAL
 import androidx.recyclerview.widget.DividerItemDecoration.VERTICAL
@@ -29,7 +33,6 @@ import com.example.mtgportal.utils.ViewModelFactory
 import com.example.mtgportal.utils.getAppName
 import com.example.mtgportal.utils.setTitle
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
 
 
 class HomeFragment : BaseFragment<FragmentHomeBinding>(), CardItemClickListener,
@@ -51,10 +54,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), CardItemClickListener,
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        _viewModel.searchFilter.searchQuery?.let { setTitle("\"it\"") }
+        postponeEnterTransition()
         initializeBottomSheet()
         initializeRecyclerView()
-        _viewModel.viewState.observe(viewLifecycleOwner, _viewStateObserver)
+        _viewModel.searchFilter.searchQuery?.let { setTitle("\"it\"") }
+        _viewModel.viewStateLiveData.observe(viewLifecycleOwner, _viewStateObserver)
         binding.clickListener = _viewClickListener
     }
 
@@ -121,14 +125,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), CardItemClickListener,
     private fun initializeBottomSheet() {
         bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet.bottomSheetRoot)
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
-        bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetCallback() {
-            override fun onStateChanged(bottomSheet: View, newState: Int) {}
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                if (isAdded) {
-                    binding.bottomSheet.iconTap.rotation = slideOffset * 90
-                }
-            }
-        })
     }
 
     private fun initializeRecyclerView() {
@@ -164,26 +160,36 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), CardItemClickListener,
 
     //region ViewModel observers
     private val _viewStateObserver = Observer<ViewState> { viewState ->
+        binding.noResult.visibility = GONE
+        binding.progressBar.visibility = GONE
         when (viewState) {
-            is ViewState.DisplayCards -> {
-                binding.progressBar.visibility = GONE
-                _adapter.setItems(viewState.data)
+            is ViewState.DisplayResult -> {
+                if (viewState.data.isNotEmpty()) _adapter.setItems(viewState.data)
+                (view?.parent as? ViewGroup)?.doOnPreDraw { startPostponedEnterTransition() }
             }
             ViewState.Loading -> binding.progressBar.visibility = VISIBLE
+            ViewState.NoResultFound -> {
+                _adapter.clearItems()
+                binding.noResult.visibility = VISIBLE
+            }
         }
     }
     //endregion
 
     //region click listeners
     private val _viewClickListener = View.OnClickListener {
-        var isFilterToggled = false
+        val isFilterToggled: Boolean
         when (it.id) {
             R.id.peak_button -> bottomSheetBehavior.state =
                 if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED) BottomSheetBehavior.STATE_COLLAPSED
                 else BottomSheetBehavior.STATE_EXPANDED
-            R.id.filer_white -> {
+            R.id.filter_colorless -> {
+                isFilterToggled = _viewModel.toggleColor(MtgColors.COLORLESS)
+                toggleSearchFilter(binding.bottomSheet.filterColorless, isFilterToggled)
+            }
+            R.id.filter_white -> {
                 isFilterToggled = _viewModel.toggleColor(MtgColors.WHITE)
-                toggleSearchFilter(binding.bottomSheet.filerWhite, isFilterToggled)
+                toggleSearchFilter(binding.bottomSheet.filterWhite, isFilterToggled)
             }
             R.id.filter_black -> {
                 isFilterToggled = _viewModel.toggleColor(MtgColors.BLACK)
@@ -222,18 +228,19 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), CardItemClickListener,
     //endregion
 
     //region implements CardGridItemViewHolder.CardGridItemClickListener
-    override fun onCardClicked(item: Card) {
-        //TODO
+    override fun onCardClicked(item: Card, imageView: AppCompatImageView) {
+        val extras = FragmentNavigatorExtras(imageView to imageView.transitionName)
+        findNavController().navigate(
+            HomeFragmentDirections.actionHomeFragmentToCardDetailsFragment(
+                item
+            ), extras
+        )
     }
 
-    override fun onFavoriteCardClicked(item: Card) {
-        _viewModel.toggleFavorite(item)
-    }
+    override fun onFavoriteCardClicked(item: Card) = _viewModel.toggleFavorite(item)
     //endregion
 
     //region implements PaginatedRecyclerView.OnBottomReachedListener()
-    override fun onBottomReached() {
-        _viewModel.loadNextPage()
-    }
+    override fun onBottomReached() = _viewModel.loadNextPage()
     //endregion
 }

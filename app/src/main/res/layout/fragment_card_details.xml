@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".ui.card.CardDetailsFragment">
+
+    <data>
+
+        <variable
+            name="card"
+            type="com.example.mtgportal.model.Card" />
+    </data>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/eclipse">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/spacing_medium">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/iv_card_art"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginEnd="@dimen/spacing_small"
+                android:adjustViewBounds="true"
+                app:layout_constraintBottom_toBottomOf="@id/iv_card_alt"
+                app:layout_constraintEnd_toStartOf="@id/iv_card_alt"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:shapeAppearanceOverlay="@style/roundedCornersImageView" />
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/iv_card_alt"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_small"
+                android:adjustViewBounds="true"
+                android:src="@drawable/img_mtg_card_background"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/iv_card_art"
+                app:layout_constraintTop_toTopOf="parent"
+                app:shapeAppearanceOverlay="@style/roundedCornersImageView" />
+
+            <View
+                android:id="@+id/divider_1"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_marginTop="@dimen/spacing_medium"
+                android:layout_marginBottom="@dimen/spacing_small"
+                android:background="@color/orange_red"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/iv_card_art" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/type"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:includeFontPadding="false"
+                android:text="@{card.type}"
+                android:textColor="@color/text_primary"
+                android:textSize="@dimen/text_huge"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/divider_1"
+                tools:text="Creature / Angel " />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:text="@{card.text}"
+                android:textColor="@color/text_secondary"
+                android:textSize="@dimen/text_medium"
+                app:layout_constraintTop_toBottomOf="@id/type"
+                tools:text="Flash\nFlying, vigilance\nWhen Archangel Avacyn enters the battlefield, creatures you control gain indestructible until end of turn.\nWhen a non-Angel creature you control dies, transform Archangel Avacyn at the beginning of the next upkeep." />
+
+            <View
+                android:id="@+id/divider_2"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:background="@color/orange_red"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/text" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/mana_cost"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:text="@{@string/cmc(card.manaCost)}"
+                android:textColor="@color/text_primary"
+                android:textSize="@dimen/text_medium"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/divider_2"
+                tools:text="Mana cost: {3}{W}{W}" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/power_toughness"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:text="@{@string/power_toughness(card.power, card.toughness)}"
+                android:textColor="@color/text_primary"
+                android:textSize="@dimen/text_medium"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/mana_cost"
+                tools:text="Power - Toughness: 4/5" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+</layout>
