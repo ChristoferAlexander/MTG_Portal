@@ -8,6 +8,7 @@ import com.example.mtgportal.model.definitions.MtgRarities
 import com.example.mtgportal.model.helper.SearchFilter
 import com.example.mtgportal.repository.CardRepository
 import com.example.mtgportal.ui.home.HomeViewModel.ViewState.*
+import com.example.mtgportal.utils.liveData.Event
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -18,10 +19,13 @@ class HomeViewModel(
 ) : ViewModel() {
 
     //region declaration
-    private val _viewStateLiveData: MutableLiveData<ViewState> = MutableLiveData()
-    val viewStateLiveData: LiveData<ViewState> = _viewStateLiveData
-    private val _cardTypesLiveData: MutableLiveData<List<String>> = MutableLiveData()
-    val cardTypeLiveData: LiveData<List<String>> = _cardTypesLiveData
+    // -- view observers --
+    private val _viewStateMutableLiveData: MutableLiveData<ViewState> = MutableLiveData()
+    val viewStateLiveData: LiveData<ViewState> = _viewStateMutableLiveData
+    private val _cardTypesMutableLiveData: MutableLiveData<List<String>> = MutableLiveData()
+    val cardTypesLiveData: LiveData<List<String>> = _cardTypesMutableLiveData
+    private val _errorViewStateMutableLiveData: MutableLiveData<Event<ErrorViewState>> = MutableLiveData()
+    val errorStateLiveData: LiveData<Event<ErrorViewState>> = _errorViewStateMutableLiveData
 
     // --api helpers--
     private var apiJob: Job? = null
@@ -57,19 +61,19 @@ class HomeViewModel(
     //region private methods
     private fun search() {
         Timber.i("Searching..")
-        _viewStateLiveData.value = Loading
+        _viewStateMutableLiveData.value = Loading
         apiJob = viewModelScope.launch {
             when (val response = _cardRepository.getRemoteCards(searchFilter, _page)) {
                 is Success -> {
                     val remoteCards = response.value.cards.filter { it.imageUrl != null }
                     remoteCards.intersect(_favoriteCards).forEach { it.isFavorite = true }
                     _cards.addAll(remoteCards)
-                    if (_cards.isEmpty()) _viewStateLiveData.postValue(NoResultFound)
-                    else _viewStateLiveData.postValue(DisplayResult(_cards))
+                    if (_cards.isEmpty()) _viewStateMutableLiveData.postValue(NoResultFound)
+                    else _viewStateMutableLiveData.postValue(DisplayResult(_cards))
                 }
-                is ApiError -> TODO()
-                NetworkError -> TODO()
-                UnknownError -> TODO()
+                NetworkError -> _errorViewStateMutableLiveData.postValue(Event(ErrorViewState.DisplayNetworkError))
+                is ApiError -> _errorViewStateMutableLiveData.postValue(Event(ErrorViewState.DisplayApiError(response.error)))
+                is UnknownError -> _errorViewStateMutableLiveData.postValue(Event(ErrorViewState.DisplayUnknownError(response.error)))
             }
         }
     }
@@ -83,10 +87,10 @@ class HomeViewModel(
     }
 
     private fun getCardTypes() {
-        if (_cardTypesLiveData.value == null)
+        if (_cardTypesMutableLiveData.value == null)
             viewModelScope.launch {
                 when (val response = _cardRepository.getRemoteTypes()) {
-                    is Success -> _cardTypesLiveData.postValue(response.value.types)
+                    is Success -> _cardTypesMutableLiveData.postValue(response.value.types)
                 }
             }
     }
@@ -129,7 +133,7 @@ class HomeViewModel(
                 }
             }
             _cards.find { it.id == card.id }?.isFavorite = card.isFavorite
-            _viewStateLiveData.postValue(DisplayResult(_cards))
+            _viewStateMutableLiveData.postValue(DisplayResult(_cards))
         }
     }
 
@@ -139,13 +143,18 @@ class HomeViewModel(
         search()
     }
 
-    fun refreshFavorite() {
+    fun refresh() {
         Timber.d("Refreshing favorite cards..")
         viewModelScope.launch {
             _favoriteCards.clear()
             _favoriteCards.addAll(_cardRepository.getFavorites())
-            _cards.subtract(_favoriteCards).forEach { it.isFavorite = false }
-            _viewStateLiveData.postValue(DisplayResult(_cards))
+            when {
+                _cards.isEmpty() -> search()
+                else -> {
+                    _cards.subtract(_favoriteCards).forEach { it.isFavorite = false }
+                    _viewStateMutableLiveData.postValue(DisplayResult(_cards))
+                }
+            }
         }
     }
 
@@ -159,6 +168,12 @@ class HomeViewModel(
         object Loading : ViewState()
         data class DisplayResult(val data: List<Card>) : ViewState()
         object NoResultFound : ViewState()
+    }
+
+    sealed class ErrorViewState {
+        object DisplayNetworkError : ErrorViewState()
+        class DisplayApiError(val message: String?) : ErrorViewState()
+        class DisplayUnknownError(val message: String?) : ErrorViewState()
     }
     //endregion
 }

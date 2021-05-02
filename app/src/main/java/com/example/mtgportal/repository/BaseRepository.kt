@@ -17,7 +17,7 @@ open class BaseRepository {
                 is IOException -> NetworkError
                 is HttpException -> ApiError(throwable.code(), throwable.message())
                 is CancellationException -> JobCanceled
-                else -> UnknownError
+                else -> UnknownError(throwable.message)
             }
         }
     }

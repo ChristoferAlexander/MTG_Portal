@@ -17,7 +17,7 @@ import com.example.mtgportal.model.Card
 import com.example.mtgportal.ui.card.FavoriteItemViewHolder.FavoriteItemClickListener
 import com.example.mtgportal.ui.card.FavoritesCardsAdapter
 import com.example.mtgportal.ui.favorite.FavoritesViewModel.ViewState
-import com.example.mtgportal.utils.ViewModelFactory
+import com.example.mtgportal.utils.viewModel.ViewModelFactory
 
 class FavoritesFragment : Fragment(), FavoriteItemClickListener {
 
@@ -66,9 +66,8 @@ class FavoritesFragment : Fragment(), FavoriteItemClickListener {
     //region ViewModel observers
     private val _viewStateObserver = Observer<ViewState> { viewState ->
         when (viewState) {
-            is ViewState.DisplayCards -> {
-                _adapter.setItems(viewState.data)
-            }
+            is ViewState.DisplayCards -> _adapter.setItems(viewState.data)
+            is ViewState.RemoveFromList -> _adapter.removeItem(viewState.card)
         }
     }
     //endregion

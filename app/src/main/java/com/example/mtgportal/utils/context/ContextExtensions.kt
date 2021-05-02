@@ -1,4 +1,4 @@
-package com.example.mtgportal.utils
+package com.example.mtgportal.utils.context
 
 import android.content.Context
 

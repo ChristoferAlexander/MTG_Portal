@@ -15,7 +15,7 @@ import com.example.mtgportal.R
 import com.example.mtgportal.databinding.FragmentCardDetailsBinding
 import com.example.mtgportal.model.Card
 import com.example.mtgportal.ui.base.BaseFragment
-import com.example.mtgportal.utils.setTitle
+import com.example.mtgportal.utils.view.setTitle
 
 class CardDetailsFragment : BaseFragment<FragmentCardDetailsBinding>() {
 

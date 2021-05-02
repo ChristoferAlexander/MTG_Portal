@@ -1,5 +1,6 @@
 package com.example.mtgportal.ui.favorite
 
+import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -31,7 +32,7 @@ class FavoritesViewModel(private val _favoriteCardDao: FavoriteCardsDao) : ViewM
         viewModelScope.launch {
             _favoriteCardDao.delete(card)
             _cards.remove(card)
-            _viewState.postValue(DisplayCards(_cards))
+            _viewState.postValue(RemoveFromList(card))
         }
     }
     //endregion
@@ -39,6 +40,7 @@ class FavoritesViewModel(private val _favoriteCardDao: FavoriteCardsDao) : ViewM
     //regions members
     sealed class ViewState {
         data class DisplayCards(val data: List<Card>) : ViewState()
+        data class RemoveFromList(val card: Card): ViewState()
     }
     //endregion
 }

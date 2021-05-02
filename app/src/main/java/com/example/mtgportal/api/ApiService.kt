@@ -41,8 +41,8 @@ interface ApiService {
     sealed class ApiResult<out T> {
         data class Success<out T>(val value: T) : ApiResult<T>()
         data class ApiError(val code: Int? = null, val error: String?) : ApiResult<Nothing>()
+        data class UnknownError(val error: String?) : ApiResult<Nothing>()
         object NetworkError : ApiResult<Nothing>()
-        object UnknownError : ApiResult<Nothing>()
         object JobCanceled : ApiResult<Nothing>()
     }
 

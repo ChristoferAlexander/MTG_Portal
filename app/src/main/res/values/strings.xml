@@ -22,5 +22,12 @@
     <string name="filters_colors">Colors</string>
     <string name="filters_rarity">Rarity</string>
     <string name="filters">Filters</string>
+    <string name="OK">OK</string>
     <!--endregion-->
+
+    <!--region dialogs-->
+    <string name="network_error_title">Network error</string>
+    <string name="network_error_body">A network error has occurred, please try again later</string>
+    <string name="unknown_error_title">Unknown error</string>
+    <!---->
 </resources>

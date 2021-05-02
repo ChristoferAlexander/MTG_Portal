@@ -1,4 +1,4 @@
-package com.example.mtgportal.utils
+package com.example.mtgportal.utils.viewModel
 
 import android.app.Activity
 import androidx.lifecycle.AbstractSavedStateViewModelFactory

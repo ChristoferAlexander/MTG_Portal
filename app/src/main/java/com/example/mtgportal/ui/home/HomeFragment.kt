@@ -10,6 +10,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
@@ -19,6 +20,7 @@ import androidx.recyclerview.widget.DividerItemDecoration.VERTICAL
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout.*
 import com.example.mtgportal.R
 import com.example.mtgportal.databinding.FragmentHomeBinding
 import com.example.mtgportal.model.Card
@@ -28,19 +30,27 @@ import com.example.mtgportal.ui.base.BaseFragment
 import com.example.mtgportal.ui.card.CardItemViewHolder.CardItemClickListener
 import com.example.mtgportal.ui.card.CardsAdapter
 import com.example.mtgportal.ui.custom.PaginatedRecyclerView.OnBottomReachedListener
-import com.example.mtgportal.ui.home.HomeViewModel.ViewState
-import com.example.mtgportal.utils.ViewModelFactory
-import com.example.mtgportal.utils.getAppName
-import com.example.mtgportal.utils.setTitle
+import com.example.mtgportal.ui.dialog.DialogFactory
+import com.example.mtgportal.ui.dialog.DialogFactory.DIALOG_TAG_ERROR
+import com.example.mtgportal.ui.dialog.DialogFactory.DIALOG_TAG_NETWORK_ERROR
+import com.example.mtgportal.ui.home.HomeViewModel.*
+import com.example.mtgportal.ui.home.HomeViewModel.ErrorViewState.*
+import com.example.mtgportal.utils.viewModel.ViewModelFactory
+import com.example.mtgportal.utils.context.getAppName
+import com.example.mtgportal.utils.liveData.Event
+import com.example.mtgportal.utils.view.setTitle
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 
 
-class HomeFragment : BaseFragment<FragmentHomeBinding>(), CardItemClickListener,
-    OnBottomReachedListener {
+class HomeFragment :
+    BaseFragment<FragmentHomeBinding>(),
+    CardItemClickListener,
+    OnBottomReachedListener,
+    OnRefreshListener {
 
     //region declaration
-    private val _adapter: CardsAdapter by lazy { CardsAdapter(this) }
     private val _viewModel: HomeViewModel by activityViewModels { ViewModelFactory(requireActivity()) }
+    private val _adapter: CardsAdapter by lazy { CardsAdapter(this) }
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
     //endregion
 
@@ -59,12 +69,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), CardItemClickListener,
         initializeRecyclerView()
         _viewModel.searchFilter.searchQuery?.let { setTitle("\"it\"") }
         _viewModel.viewStateLiveData.observe(viewLifecycleOwner, _viewStateObserver)
+        _viewModel.errorStateLiveData.observe(viewLifecycleOwner, _errorViewStateObserver)
         binding.clickListener = _viewClickListener
+        binding.swipeRefresh.setOnRefreshListener(this)
     }
 
     override fun onResume() {
         super.onResume()
-        _viewModel.refreshFavorite()
+        _viewModel.refresh()
     }
     //endregion
 
@@ -77,11 +89,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), CardItemClickListener,
     override fun onPrepareOptionsMenu(menu: Menu) {
         super.onPrepareOptionsMenu(menu)
         val itemGrid = menu.findItem(R.id.action_toggle_grid)
-        itemGrid.icon =
-            if (_viewModel.isGridDisplay)
-                ResourcesCompat.getDrawable(resources, R.drawable.ic_grid_on_24, null)
-            else
-                ResourcesCompat.getDrawable(resources, R.drawable.ic_grid_off_24, null)
+        val drawableRes = if (_viewModel.isGridDisplay) R.drawable.ic_grid_on_24 else R.drawable.ic_grid_off_24
+        itemGrid.icon = ResourcesCompat.getDrawable(resources, drawableRes, null)
     }
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
@@ -91,9 +100,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), CardItemClickListener,
             activity?.invalidateOptionsMenu()
             true
         }
-        else -> {
-            super.onOptionsItemSelected(item)
-        }
+        else -> super.onOptionsItemSelected(item)
     }
     //endregion
 
@@ -153,15 +160,20 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), CardItemClickListener,
         }
     }
 
-    private fun toggleSearchFilter(view: View, isEnabled: Boolean) {
+    private fun toggleSearchFilterAlpha(view: View, isEnabled: Boolean) {
         view.alpha = if (isEnabled) 1F else 0.5F
+    }
+
+    private fun resetLoaders() {
+        binding.noResult.visibility = GONE
+        binding.progressBar.visibility = GONE
+        binding.swipeRefresh.isRefreshing = false
     }
     //endregion
 
     //region ViewModel observers
     private val _viewStateObserver = Observer<ViewState> { viewState ->
-        binding.noResult.visibility = GONE
-        binding.progressBar.visibility = GONE
+        resetLoaders()
         when (viewState) {
             is ViewState.DisplayResult -> {
                 if (viewState.data.isNotEmpty()) _adapter.setItems(viewState.data)
@@ -172,6 +184,16 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), CardItemClickListener,
                 _adapter.clearItems()
                 binding.noResult.visibility = VISIBLE
             }
+        }
+    }
+
+    private val _errorViewStateObserver = Observer<Event<ErrorViewState>> { errorViewState ->
+        resetLoaders()
+        //TODO move dialogs to factory class
+        when (val error = errorViewState.getContentIfNotHandled()) {
+            is DisplayApiError -> DialogFactory.createErrorDialog(errorMessage = error.message).show(childFragmentManager, DIALOG_TAG_ERROR)
+            is DisplayUnknownError -> DialogFactory.createErrorDialog(errorMessage = error.message).show(childFragmentManager, DIALOG_TAG_ERROR)
+            DisplayNetworkError -> DialogFactory.createNetworkErrorDialog().show(childFragmentManager, DIALOG_TAG_NETWORK_ERROR)
         }
     }
     //endregion
@@ -185,43 +207,43 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), CardItemClickListener,
                 else BottomSheetBehavior.STATE_EXPANDED
             R.id.filter_colorless -> {
                 isFilterToggled = _viewModel.toggleColor(MtgColors.COLORLESS)
-                toggleSearchFilter(binding.bottomSheet.filterColorless, isFilterToggled)
+                toggleSearchFilterAlpha(binding.bottomSheet.filterColorless, isFilterToggled)
             }
             R.id.filter_white -> {
                 isFilterToggled = _viewModel.toggleColor(MtgColors.WHITE)
-                toggleSearchFilter(binding.bottomSheet.filterWhite, isFilterToggled)
+                toggleSearchFilterAlpha(binding.bottomSheet.filterWhite, isFilterToggled)
             }
             R.id.filter_black -> {
                 isFilterToggled = _viewModel.toggleColor(MtgColors.BLACK)
-                toggleSearchFilter(binding.bottomSheet.filterBlack, isFilterToggled)
+                toggleSearchFilterAlpha(binding.bottomSheet.filterBlack, isFilterToggled)
             }
             R.id.filter_blue -> {
                 isFilterToggled = _viewModel.toggleColor(MtgColors.BLUE)
-                toggleSearchFilter(binding.bottomSheet.filterBlue, isFilterToggled)
+                toggleSearchFilterAlpha(binding.bottomSheet.filterBlue, isFilterToggled)
             }
             R.id.filter_red -> {
                 isFilterToggled = _viewModel.toggleColor(MtgColors.RED)
-                toggleSearchFilter(binding.bottomSheet.filterRed, isFilterToggled)
+                toggleSearchFilterAlpha(binding.bottomSheet.filterRed, isFilterToggled)
             }
             R.id.filter_green -> {
                 isFilterToggled = _viewModel.toggleColor(MtgColors.GREEN)
-                toggleSearchFilter(binding.bottomSheet.filterGreen, isFilterToggled)
+                toggleSearchFilterAlpha(binding.bottomSheet.filterGreen, isFilterToggled)
             }
             R.id.filter_rarity_common -> {
                 isFilterToggled = _viewModel.toggleRarity(MtgRarities.COMMON)
-                toggleSearchFilter(binding.bottomSheet.filterRarityCommon, isFilterToggled)
+                toggleSearchFilterAlpha(binding.bottomSheet.filterRarityCommon, isFilterToggled)
             }
             R.id.filter_rarity_uncommon -> {
                 isFilterToggled = _viewModel.toggleRarity(MtgRarities.UNCOMMON)
-                toggleSearchFilter(binding.bottomSheet.filterRarityUncommon, isFilterToggled)
+                toggleSearchFilterAlpha(binding.bottomSheet.filterRarityUncommon, isFilterToggled)
             }
             R.id.filter_rarity_rare -> {
                 isFilterToggled = _viewModel.toggleRarity(MtgRarities.RARE)
-                toggleSearchFilter(binding.bottomSheet.filterRarityRare, isFilterToggled)
+                toggleSearchFilterAlpha(binding.bottomSheet.filterRarityRare, isFilterToggled)
             }
             R.id.filter_rarity_mythic_rare -> {
                 isFilterToggled = _viewModel.toggleRarity(MtgRarities.MYTHIC_RARE)
-                toggleSearchFilter(binding.bottomSheet.filterRarityMythicRare, isFilterToggled)
+                toggleSearchFilterAlpha(binding.bottomSheet.filterRarityMythicRare, isFilterToggled)
             }
         }
     }
@@ -238,6 +260,12 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), CardItemClickListener,
     }
 
     override fun onFavoriteCardClicked(item: Card) = _viewModel.toggleFavorite(item)
+    //endregion
+
+    //region implements SwipeRefreshLayout.OnRefreshListener
+    override fun onRefresh() {
+        _viewModel.refresh()
+    }
     //endregion
 
     //region implements PaginatedRecyclerView.OnBottomReachedListener()

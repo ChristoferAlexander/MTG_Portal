@@ -1,4 +1,4 @@
-package com.example.mtgportal.utils
+package com.example.mtgportal.utils.view
 
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment

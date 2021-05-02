@@ -28,4 +28,12 @@ abstract class BaseRecyclerViewAdapter<D, V : RecyclerView.ViewHolder> : Recycle
         _items.clear()
         notifyDataSetChanged()
     }
+
+    fun removeItem(item: D) {
+        val itemIndex = _items.indexOf(item)
+        if (itemIndex != -1) {
+            _items.remove(item)
+            notifyItemRemoved(itemIndex)
+        }
+    }
 }

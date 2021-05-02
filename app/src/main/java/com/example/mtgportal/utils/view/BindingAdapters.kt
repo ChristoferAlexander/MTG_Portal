@@ -1,9 +1,8 @@
-package com.example.mtgportal.utils
+package com.example.mtgportal.utils.view
 
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
 import com.example.mtgportal.R
 

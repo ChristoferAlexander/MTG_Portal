@@ -14,6 +14,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/nero"
+        android:clickable="true"
+        android:focusable="true"
         android:paddingBottom="@dimen/spacing_medium"
         app:behavior_hideable="false"
         app:behavior_peekHeight="@dimen/peak_height"
@@ -42,9 +44,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Sets"
-            android:visibility="gone"
             android:textColor="@color/text_primary"
             android:textSize="@dimen/text_large"
+            android:visibility="gone"
             app:layout_constraintStart_toStartOf="@id/label_colors"
             app:layout_constraintTop_toBottomOf="@id/peak_button" />
 
