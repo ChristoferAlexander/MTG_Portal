@@ -4,6 +4,10 @@ import android.app.Application
 import androidx.room.Room
 import com.example.mtgportal.api.ApiService
 import com.example.mtgportal.database.AppDatabase
+import com.example.mtgportal.injection.*
+import org.koin.android.ext.koin.androidContext
+import org.koin.android.ext.koin.androidLogger
+import org.koin.core.context.startKoin
 import timber.log.Timber
 
 import timber.log.Timber.DebugTree
@@ -11,24 +15,29 @@ import timber.log.Timber.DebugTree
 
 class App : Application() {
 
-    //region declaration
-    val apiService by lazy { ApiService.create() }
-    val database by lazy {
-        Room.databaseBuilder(
-            applicationContext,
-            AppDatabase::class.java, "cards-db"
-        ).build()
-    }
-    //endregion
-
     //region init
     override fun onCreate() {
         super.onCreate()
         instance = this
-        setTimber()
+        initTimber()
+        initKoin()
     }
 
-    private fun setTimber() {
+    private fun initKoin() {
+        startKoin {
+            androidLogger()
+            androidContext(this@App)
+            modules(
+                apiModule,
+                viewModelModule,
+                repositoryModule,
+                networkModule,
+                databaseModule
+            )
+        }
+    }
+
+    private fun initTimber() {
         if (BuildConfig.DEBUG) {
             Timber.plant(DebugTree())
         }

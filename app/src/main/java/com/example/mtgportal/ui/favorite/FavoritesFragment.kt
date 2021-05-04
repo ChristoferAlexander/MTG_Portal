@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -17,7 +16,7 @@ import com.example.mtgportal.model.Card
 import com.example.mtgportal.ui.card.FavoriteItemViewHolder.FavoriteItemClickListener
 import com.example.mtgportal.ui.card.FavoritesCardsAdapter
 import com.example.mtgportal.ui.favorite.FavoritesViewModel.ViewState
-import com.example.mtgportal.utils.viewModel.ViewModelFactory
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class FavoritesFragment : Fragment(), FavoriteItemClickListener {
 
@@ -25,9 +24,7 @@ class FavoritesFragment : Fragment(), FavoriteItemClickListener {
     private var _binding: FragmentFavoritesBinding? = null
     private val binding get() = _binding!!
     private val _adapter: FavoritesCardsAdapter by lazy { FavoritesCardsAdapter(this) }
-    private val _viewModel: FavoritesViewModel by activityViewModels {
-        ViewModelFactory(requireActivity())
-    }
+    private val _viewModel: FavoritesViewModel by viewModel()
     //endregion
 
     //region lifecycle

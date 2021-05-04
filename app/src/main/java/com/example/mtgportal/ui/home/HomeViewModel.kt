@@ -6,7 +6,9 @@ import com.example.mtgportal.model.Card
 import com.example.mtgportal.model.definitions.MtgColors
 import com.example.mtgportal.model.definitions.MtgRarities
 import com.example.mtgportal.model.helper.SearchFilter
-import com.example.mtgportal.repository.CardRepository
+import com.example.mtgportal.repository.CardsRepository
+import com.example.mtgportal.repository.CardTypesRepository
+import com.example.mtgportal.repository.FavoritesCardsRepository
 import com.example.mtgportal.ui.home.HomeViewModel.ViewState.*
 import com.example.mtgportal.utils.liveData.Event
 import kotlinx.coroutines.Job
@@ -15,7 +17,9 @@ import timber.log.Timber
 
 class HomeViewModel(
     private val _state: SavedStateHandle,
-    private val _cardRepository: CardRepository
+    private val _cardsRepository: CardsRepository,
+    private val _cardTypesRepository: CardTypesRepository,
+    private val _favoritesCardsRepository: FavoritesCardsRepository
 ) : ViewModel() {
 
     //region declaration
@@ -46,7 +50,7 @@ class HomeViewModel(
     init {
         getCardTypes()
         viewModelScope.launch {
-            _favoriteCards.addAll(_cardRepository.getFavorites())
+            _favoriteCards.addAll(_favoritesCardsRepository.getFavorites())
             search()
         }
     }
@@ -63,7 +67,7 @@ class HomeViewModel(
         Timber.i("Searching..")
         _viewStateMutableLiveData.value = Loading
         apiJob = viewModelScope.launch {
-            when (val response = _cardRepository.getRemoteCards(searchFilter, _page)) {
+            when (val response = _cardsRepository.getRemoteCards(searchFilter, _page)) {
                 is Success -> {
                     val remoteCards = response.value.cards.filter { it.imageUrl != null }
                     remoteCards.intersect(_favoriteCards).forEach { it.isFavorite = true }
@@ -89,7 +93,7 @@ class HomeViewModel(
     private fun getCardTypes() {
         if (_cardTypesMutableLiveData.value == null)
             viewModelScope.launch {
-                when (val response = _cardRepository.getRemoteTypes()) {
+                when (val response = _cardTypesRepository.getRemoteCardTypes()) {
                     is Success -> _cardTypesMutableLiveData.postValue(response.value.types)
                 }
             }
@@ -125,11 +129,11 @@ class HomeViewModel(
             when (card.isFavorite) {
                 true -> {
                     _favoriteCards.add(card)
-                    _cardRepository.addFavorite(card)
+                    _favoritesCardsRepository.addFavorite(card)
                 }
                 false -> {
                     _favoriteCards.remove(card)
-                    _cardRepository.deleteFavorite(card)
+                    _favoritesCardsRepository.deleteFavorite(card)
                 }
             }
             _cards.find { it.id == card.id }?.isFavorite = card.isFavorite
@@ -147,7 +151,7 @@ class HomeViewModel(
         Timber.d("Refreshing favorite cards..")
         viewModelScope.launch {
             _favoriteCards.clear()
-            _favoriteCards.addAll(_cardRepository.getFavorites())
+            _favoriteCards.addAll(_favoritesCardsRepository.getFavorites())
             when {
                 _cards.isEmpty() -> search()
                 else -> {

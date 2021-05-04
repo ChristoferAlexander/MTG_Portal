@@ -30,16 +30,14 @@ import com.example.mtgportal.ui.base.BaseFragment
 import com.example.mtgportal.ui.card.CardItemViewHolder.CardItemClickListener
 import com.example.mtgportal.ui.card.CardsAdapter
 import com.example.mtgportal.ui.custom.PaginatedRecyclerView.OnBottomReachedListener
-import com.example.mtgportal.ui.dialog.DialogFactory
-import com.example.mtgportal.ui.dialog.DialogFactory.DIALOG_TAG_ERROR
-import com.example.mtgportal.ui.dialog.DialogFactory.DIALOG_TAG_NETWORK_ERROR
+import com.example.mtgportal.ui.dialog.*
 import com.example.mtgportal.ui.home.HomeViewModel.*
 import com.example.mtgportal.ui.home.HomeViewModel.ErrorViewState.*
-import com.example.mtgportal.utils.viewModel.ViewModelFactory
 import com.example.mtgportal.utils.context.getAppName
 import com.example.mtgportal.utils.liveData.Event
 import com.example.mtgportal.utils.view.setTitle
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import org.koin.androidx.viewmodel.ext.android.sharedStateViewModel
 
 
 class HomeFragment :
@@ -49,7 +47,8 @@ class HomeFragment :
     OnRefreshListener {
 
     //region declaration
-    private val _viewModel: HomeViewModel by activityViewModels { ViewModelFactory(requireActivity()) }
+    private val _viewModel: HomeViewModel by sharedStateViewModel()
+
     private val _adapter: CardsAdapter by lazy { CardsAdapter(this) }
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
     //endregion
@@ -67,7 +66,7 @@ class HomeFragment :
         postponeEnterTransition()
         initializeBottomSheet()
         initializeRecyclerView()
-        _viewModel.searchFilter.searchQuery?.let { setTitle("\"it\"") }
+        _viewModel.searchFilter.searchQuery?.let { setTitle("\"$it\"") }
         _viewModel.viewStateLiveData.observe(viewLifecycleOwner, _viewStateObserver)
         _viewModel.errorStateLiveData.observe(viewLifecycleOwner, _errorViewStateObserver)
         binding.clickListener = _viewClickListener
@@ -189,11 +188,10 @@ class HomeFragment :
 
     private val _errorViewStateObserver = Observer<Event<ErrorViewState>> { errorViewState ->
         resetLoaders()
-        //TODO move dialogs to factory class
         when (val error = errorViewState.getContentIfNotHandled()) {
-            is DisplayApiError -> DialogFactory.createErrorDialog(errorMessage = error.message).show(childFragmentManager, DIALOG_TAG_ERROR)
-            is DisplayUnknownError -> DialogFactory.createErrorDialog(errorMessage = error.message).show(childFragmentManager, DIALOG_TAG_ERROR)
-            DisplayNetworkError -> DialogFactory.createNetworkErrorDialog().show(childFragmentManager, DIALOG_TAG_NETWORK_ERROR)
+            is DisplayApiError -> createErrorDialog(errorMessage = error.message).show(childFragmentManager, DIALOG_TAG_ERROR)
+            is DisplayUnknownError -> createErrorDialog(errorMessage = error.message).show(childFragmentManager, DIALOG_TAG_ERROR)
+            DisplayNetworkError -> createNetworkErrorDialog().show(childFragmentManager, DIALOG_TAG_NETWORK_ERROR)
         }
     }
     //endregion
