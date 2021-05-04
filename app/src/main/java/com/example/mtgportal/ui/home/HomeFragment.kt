@@ -9,8 +9,6 @@ import androidx.appcompat.widget.SearchView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.doOnPreDraw
-import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
@@ -82,7 +80,7 @@ class HomeFragment :
     //region options menu
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.home_menu, menu)
-        initSearchUi(menu)
+        initSearchUi(menu.findItem(R.id.action_search))
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
@@ -104,13 +102,13 @@ class HomeFragment :
     //endregion
 
     //region UI init methods
-    private fun initSearchUi(menu: Menu) {
-        (menu.findItem(R.id.action_search).actionView as SearchView).let { searchView ->
+    private fun initSearchUi(menuItem: MenuItem) {
+        (menuItem.actionView as SearchView).let { searchView ->
             searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String?): Boolean {
                     searchView.isIconified = true
                     searchView.clearFocus()
-                    menu.findItem(R.id.action_search).collapseActionView()
+                    menuItem.collapseActionView()
                     setTitle(if (query.isNullOrEmpty()) context?.getAppName() else "\"$query\"")
                     _viewModel.onSearchQueryChanged(if (query.isNullOrBlank()) null else query)
                     return true
