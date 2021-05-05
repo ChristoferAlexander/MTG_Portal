@@ -62,13 +62,11 @@ class HomeFragment :
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         postponeEnterTransition()
+        _viewModel.searchFilter.searchQuery?.let { setTitle("\"$it\"") }
         initializeBottomSheet()
         initializeRecyclerView()
-        _viewModel.searchFilter.searchQuery?.let { setTitle("\"$it\"") }
-        _viewModel.viewStateLiveData.observe(viewLifecycleOwner, _viewStateObserver)
-        _viewModel.errorStateLiveData.observe(viewLifecycleOwner, _errorViewStateObserver)
-        binding.clickListener = _viewClickListener
-        binding.swipeRefresh.setOnRefreshListener(this)
+        initBinding()
+        subscribeObservers()
     }
 
     override fun onResume() {
@@ -101,7 +99,22 @@ class HomeFragment :
     }
     //endregion
 
-    //region UI init methods
+    //region init methods
+    private fun initializeBottomSheet() {
+        bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet.bottomSheetRoot)
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+    }
+
+    private fun initBinding() {
+        binding.clickListener = _viewClickListener
+        binding.swipeRefresh.setOnRefreshListener(this)
+    }
+
+    private fun subscribeObservers() {
+        _viewModel.viewStateLiveData.observe(viewLifecycleOwner, _viewStateObserver)
+        _viewModel.errorStateLiveData.observe(viewLifecycleOwner, _errorViewStateObserver)
+    }
+
     private fun initSearchUi(menuItem: MenuItem) {
         (menuItem.actionView as SearchView).let { searchView ->
             searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -126,11 +139,6 @@ class HomeFragment :
         }
     }
 
-    private fun initializeBottomSheet() {
-        bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet.bottomSheetRoot)
-        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
-    }
-
     private fun initializeRecyclerView() {
         updateAdapterGridState()
         binding.cardsRv.onBottomReachedListener = this
@@ -148,7 +156,7 @@ class HomeFragment :
     }
     //endregion
 
-    //region UI manipulation methods
+    //region private helper methods
     private fun updateAdapterGridState() {
         _adapter.isGrid = _viewModel.isGridDisplay
         binding.cardsRv.layoutManager = when {
@@ -157,8 +165,9 @@ class HomeFragment :
         }
     }
 
-    private fun toggleSearchFilterAlpha(view: View, isEnabled: Boolean) {
-        view.alpha = if (isEnabled) 1F else 0.5F
+    private fun handleFilterToggle(view: View, @MtgColors color: String) {
+        val isFilterToggled = _viewModel.toggleColor(color)
+        view.alpha = if (isFilterToggled) 1F else 0.5F
     }
 
     private fun resetLoaders() {
@@ -199,48 +208,20 @@ class HomeFragment :
         val isFilterToggled: Boolean
         when (it.id) {
             R.id.peak_button -> bottomSheetBehavior.state =
-                if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED) BottomSheetBehavior.STATE_COLLAPSED
-                else BottomSheetBehavior.STATE_EXPANDED
-            R.id.filter_colorless -> {
-                isFilterToggled = _viewModel.toggleColor(MtgColors.COLORLESS)
-                toggleSearchFilterAlpha(binding.bottomSheet.filterColorless, isFilterToggled)
-            }
-            R.id.filter_white -> {
-                isFilterToggled = _viewModel.toggleColor(MtgColors.WHITE)
-                toggleSearchFilterAlpha(binding.bottomSheet.filterWhite, isFilterToggled)
-            }
-            R.id.filter_black -> {
-                isFilterToggled = _viewModel.toggleColor(MtgColors.BLACK)
-                toggleSearchFilterAlpha(binding.bottomSheet.filterBlack, isFilterToggled)
-            }
-            R.id.filter_blue -> {
-                isFilterToggled = _viewModel.toggleColor(MtgColors.BLUE)
-                toggleSearchFilterAlpha(binding.bottomSheet.filterBlue, isFilterToggled)
-            }
-            R.id.filter_red -> {
-                isFilterToggled = _viewModel.toggleColor(MtgColors.RED)
-                toggleSearchFilterAlpha(binding.bottomSheet.filterRed, isFilterToggled)
-            }
-            R.id.filter_green -> {
-                isFilterToggled = _viewModel.toggleColor(MtgColors.GREEN)
-                toggleSearchFilterAlpha(binding.bottomSheet.filterGreen, isFilterToggled)
-            }
-            R.id.filter_rarity_common -> {
-                isFilterToggled = _viewModel.toggleRarity(MtgRarities.COMMON)
-                toggleSearchFilterAlpha(binding.bottomSheet.filterRarityCommon, isFilterToggled)
-            }
-            R.id.filter_rarity_uncommon -> {
-                isFilterToggled = _viewModel.toggleRarity(MtgRarities.UNCOMMON)
-                toggleSearchFilterAlpha(binding.bottomSheet.filterRarityUncommon, isFilterToggled)
-            }
-            R.id.filter_rarity_rare -> {
-                isFilterToggled = _viewModel.toggleRarity(MtgRarities.RARE)
-                toggleSearchFilterAlpha(binding.bottomSheet.filterRarityRare, isFilterToggled)
-            }
-            R.id.filter_rarity_mythic_rare -> {
-                isFilterToggled = _viewModel.toggleRarity(MtgRarities.MYTHIC_RARE)
-                toggleSearchFilterAlpha(binding.bottomSheet.filterRarityMythicRare, isFilterToggled)
-            }
+                if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED)
+                    BottomSheetBehavior.STATE_COLLAPSED
+                else
+                    BottomSheetBehavior.STATE_EXPANDED
+            R.id.filter_colorless -> handleFilterToggle(binding.bottomSheet.filterColorless, MtgColors.COLORLESS)
+            R.id.filter_white -> handleFilterToggle(binding.bottomSheet.filterWhite, MtgColors.WHITE)
+            R.id.filter_black -> handleFilterToggle(binding.bottomSheet.filterBlack, MtgColors.BLACK)
+            R.id.filter_blue -> handleFilterToggle(binding.bottomSheet.filterBlue, MtgColors.BLUE)
+            R.id.filter_red -> handleFilterToggle(binding.bottomSheet.filterRed, MtgColors.RED)
+            R.id.filter_green -> handleFilterToggle(binding.bottomSheet.filterGreen, MtgColors.GREEN)
+            R.id.filter_rarity_common -> handleFilterToggle(binding.bottomSheet.filterRarityCommon, MtgRarities.COMMON)
+            R.id.filter_rarity_uncommon -> handleFilterToggle(binding.bottomSheet.filterRarityUncommon, MtgRarities.UNCOMMON)
+            R.id.filter_rarity_rare -> handleFilterToggle(binding.bottomSheet.filterRarityRare, MtgRarities.RARE)
+            R.id.filter_rarity_mythic_rare -> handleFilterToggle(binding.bottomSheet.filterRarityMythicRare, MtgRarities.MYTHIC_RARE)
         }
     }
     //endregion
